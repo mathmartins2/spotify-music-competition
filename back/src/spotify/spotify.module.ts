@@ -4,14 +4,14 @@ import { SpotifyService } from './spotify.service';
 import { SpotifyController } from './spotify.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { SpotifyCronService } from './spotify.cron.service';
+import { AuthModule } from '../auth/auth.module';
+import { forwardRef } from '@nestjs/common';
 
 @Module({
   imports: [
     PrismaModule,
-    CacheModule.register({
-      ttl: 5 * 60 * 1000, // 5 minutos
-      max: 100, // máximo de 100 itens em cache
-    }),
+    CacheModule.register(),
+    forwardRef(() => AuthModule),
   ],
   providers: [SpotifyService, SpotifyCronService],
   controllers: [SpotifyController],

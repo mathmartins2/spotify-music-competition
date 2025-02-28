@@ -35,4 +35,14 @@ export const GroupsService = {
     const response = await api.post(`/groups/${groupId}/update-tracks`);
     return response.data;
   },
+
+  searchTracks: async (query: string) => {
+    const response = await api.get(`/spotify/search?q=${query}`);
+    return response.data;
+  },
+
+  recommendTrack: async (memberId: string, track: any) => {
+    const response = await api.post(`/groups/members/${memberId}/recommendations`, { track });
+    return response.data;
+  },
 }; 

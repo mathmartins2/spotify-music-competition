@@ -12,7 +12,7 @@ model User {
   email        String        @unique
   spotifyId    String        @unique
   accessToken  String
-  refreshToken String
+  refreshToken String?
   displayName  String?
   photoUrl     String?
   groups       GroupMember[]
@@ -30,10 +30,10 @@ model Group {
 }
 
 model GroupMember {
-  id                 String   @id @default(uuid())
+  id                 String                @id @default(uuid())
   userId             String
   groupId            String
-  score              Int      @default(0)
+  score              Int                   @default(0)
   topTrackId         String?
   topTrackName       String?
   topTrackArtist     String?
@@ -42,11 +42,12 @@ model GroupMember {
   currentTrackName   String?
   currentTrackArtist String?
   currentTrackImage  String?
-  lastUpdated        DateTime @default(now())
-  user               User     @relation(fields: [userId], references: [id])
-  group              Group    @relation(fields: [groupId], references: [id])
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  lastUpdated        DateTime              @default(now())
+  user               User                  @relation(fields: [userId], references: [id])
+  group              Group                 @relation(fields: [groupId], references: [id])
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  recommendations    TrackRecommendation[]
 
   @@unique([userId, groupId])
 }
@@ -61,4 +62,18 @@ model TrackPlay {
   user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId, playedAt])
+}
+
+model TrackRecommendation {
+  id          String      @id @default(uuid())
+  groupMember GroupMember @relation(fields: [memberId], references: [id])
+  memberId    String
+  trackId     String
+  trackName   String
+  trackArtist String
+  trackImage  String?
+  trackUrl    String
+  createdAt   DateTime    @default(now())
+
+  @@index([memberId])
 }

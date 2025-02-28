@@ -6,6 +6,7 @@ import { CallbackPage } from './pages/CallbackPage';
 import { GroupsPage } from './pages/GroupsPage';
 import { GroupDetailsPage } from './pages/GroupDetailsPage';
 import { AuthService } from './services/auth';
+import { AuthCallback } from './pages/AuthCallback';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   if (!AuthService.isAuthenticated()) {
@@ -20,7 +21,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/callback" element={<CallbackPage />} />
+          <Route path="/callback" element={<AuthCallback />} />
           <Route
             path="/"
             element={

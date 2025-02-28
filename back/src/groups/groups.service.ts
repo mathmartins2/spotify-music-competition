@@ -80,6 +80,11 @@ export class GroupsService {
                 photoUrl: true,
               },
             },
+            recommendations: {
+              orderBy: {
+                createdAt: 'desc'
+              }
+            }
           },
         },
       },
@@ -109,6 +114,11 @@ export class GroupsService {
             photoUrl: true,
           },
         },
+        recommendations: {
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
       },
       orderBy: { score: 'desc' },
     });
@@ -187,5 +197,25 @@ export class GroupsService {
   async joinByCode(code: string, userId: string) {
     const groupId = code;
     return this.joinGroup(groupId, userId);
+  }
+
+  async recommendTrack(memberId: string, track: any) {
+    return this.prisma.trackRecommendation.create({
+      data: {
+        memberId,
+        trackId: track.id,
+        trackName: track.name,
+        trackArtist: track.artists[0].name,
+        trackImage: track.album.images[0]?.url,
+        trackUrl: track.external_urls.spotify,
+      },
+    });
+  }
+
+  async getRecommendations(memberId: string) {
+    return this.prisma.trackRecommendation.findMany({
+      where: { memberId },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 } 

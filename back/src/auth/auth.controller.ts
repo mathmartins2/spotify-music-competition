@@ -17,13 +17,9 @@ export class AuthController {
   @UseGuards(AuthGuard('spotify'))
   async spotifyAuthCallback(@Req() req, @Res() res) {
     try {
-      this.logger.log('Processing Spotify callback');
       const result = await this.authService.login(req.user);
-      this.logger.log('Login successful');
-      
       res.redirect(`${process.env.FRONTEND_URL}/callback?code=${result.access_token}`);
     } catch (error) {
-      this.logger.error(`Callback error: ${error.message}`, error.stack);
       res.redirect(`${process.env.FRONTEND_URL}/login`);
     }
   }

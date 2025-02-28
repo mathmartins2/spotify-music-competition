@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { SpotifyService } from '../spotify/spotify.service';
@@ -9,6 +9,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    @Inject(forwardRef(() => SpotifyService))
     private spotifyService: SpotifyService,
   ) {}
 
@@ -105,6 +106,45 @@ export class AuthService {
       return { accessToken };
     } catch (error) {
       throw new UnauthorizedException('Invalid token');
+    }
+  }
+
+  async refreshSpotifyToken(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user?.refreshToken) {
+      throw new UnauthorizedException('No refresh token available');
+    }
+
+    try {
+      const response = await axios.post('https://accounts.spotify.com/api/token', 
+        new URLSearchParams({
+          grant_type: 'refresh_token',
+          refresh_token: user.refreshToken,
+          client_id: process.env.SPOTIFY_CLIENT_ID!,
+          client_secret: process.env.SPOTIFY_CLIENT_SECRET!,
+        }), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+
+      const { access_token, refresh_token } = response.data;
+
+      // Atualiza os tokens no banco
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          accessToken: access_token,
+          refreshToken: refresh_token ?? user.refreshToken, // Mantém o antigo se não receber um novo
+        },
+      });
+
+      return access_token;
+    } catch (error) {
+      throw new UnauthorizedException('Failed to refresh token');
     }
   }
 } 
