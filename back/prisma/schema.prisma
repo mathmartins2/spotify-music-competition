@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  spotifyId    String        @unique
+  accessToken  String
+  refreshToken String
+  displayName  String?
+  photoUrl     String?
+  groups       GroupMember[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  TrackPlay    TrackPlay[]
+}
+
+model Group {
+  id        String        @id @default(uuid())
+  name      String
+  members   GroupMember[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model GroupMember {
+  id                 String   @id @default(uuid())
+  userId             String
+  groupId            String
+  score              Int      @default(0)
+  topTrackId         String?
+  topTrackName       String?
+  topTrackArtist     String?
+  topTrackImage      String?
+  currentTrackId     String?
+  currentTrackName   String?
+  currentTrackArtist String?
+  currentTrackImage  String?
+  lastUpdated        DateTime @default(now())
+  user               User     @relation(fields: [userId], references: [id])
+  group              Group    @relation(fields: [groupId], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([userId, groupId])
+}
+
+model TrackPlay {
+  id        String   @id @default(uuid())
+  userId    String
+  trackId   String
+  trackName String
+  duration  Int // duração em ms
+  playedAt  DateTime
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, playedAt])
+}
